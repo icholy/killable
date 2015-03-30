@@ -77,3 +77,30 @@ if err := k.Err(); err != nil {
 }
 
 ```
+
+Multiple `Killable`s can be joined together in a `Killable` group.
+If any of the `Killable`s are killed, all others in the group will be killed as well.
+
+``` go
+var (
+  k1 = killable.New()
+  k2 = killable.New()
+  k3 = killable.NewGroup(k1, k2)
+)
+
+go func() {
+  log.Println("k1", k1.Err())
+}()
+
+go func() {
+  log.Println("k2", k2.Err())
+}()
+
+go func() {
+  log.Println("k3", k3.Err())
+}()
+
+k2.Kill(fmt.Errorf("time to die"))
+```
+
+
