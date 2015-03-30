@@ -1,6 +1,8 @@
-# Killable
+# Killable (WIP)
 
 > A package for graceful shutdowns in Go
+
+**Note:** The API is still in flux.
 
 A `Killable` has 3 states:
 
@@ -19,3 +21,4 @@ Worker processes can be started with:
 * `killable.Do` which blocks while executing
 
 See examples directory to see how to use it.
+
