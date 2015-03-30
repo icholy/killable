@@ -22,3 +22,5 @@ Worker processes can be started with:
 
 See `examples/` directory to see how to use it.
 
+The methods like `Defer`, `Go`, `Do`, etc ...  have been placed in the packages because the `Killable` type is meant to be embedded. The interface the `Killable` type exposes makes sense without understanding the `killable` package.
+
