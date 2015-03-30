@@ -13,6 +13,11 @@ There are two ways a killable process can terminate.
 0. One of the worker functions returns an `error`
 0. The `Kill(error)` method is invoked on the `Killable`
 
+Worker processes can be started with:
+
+* `killable.Go` which starts a goroutine
+* `killable.Do` which blocks while executing
+
 ``` go
 k = killable.New()
 
