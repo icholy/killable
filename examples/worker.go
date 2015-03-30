@@ -63,7 +63,7 @@ func (w *Worker) consumer() error {
 func (w *Worker) Start() {
 
 	killable.Defer(w, func() {
-		fmt.Printf("worker: %s: all processes complete, cleaning up", w.name)
+		fmt.Printf("worker: %s: all processes complete, cleaning up\n", w.name)
 	})
 
 	killable.Go(w, func() error {
@@ -97,7 +97,11 @@ func main() {
 	}()
 
 	if err := g.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
+
+	// wait for the deferreds to run
+	<-g.Dead()
+	time.Sleep(time.Second)
 
 }
