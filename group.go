@@ -18,10 +18,11 @@ func NewGroup(killables ...Killable) Killable {
 		deadc:    make(chan struct{}),
 		errc:     make(chan error),
 	}
-	go k.errorHandler()
+	k.wg.Add(len(killables))
 	for _, child := range killables {
 		go k.childErrorHandler(child)
 	}
+	go k.errorHandler()
 	return k
 }
 
@@ -32,10 +33,9 @@ func (k *group) Dying() <-chan struct{} { return k.dyingc }
 func (k *group) Dead() <-chan struct{}  { return k.deadc }
 
 func (k *group) childErrorHandler(child Killable) {
-	k.add()
 	k.Kill(child.Err())
 	<-child.Dead()
-	k.done()
+	k.wg.Done()
 }
 
 func (k *group) errorHandler() {
