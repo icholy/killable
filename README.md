@@ -22,7 +22,7 @@ go func() {
   k.Kill(nil)
 }()
 
-// Defer run the callback once all worker functions (Go/Do) have returned
+// Defer runs the callback once all worker functions (Go/Do) have returned
 killable.Defer(k, func() {
   fmt.Println("all worker function done")
 })
@@ -31,7 +31,7 @@ killable.Go(k, func () error {
 
   ch = make(chan int64)
 
-  // producer that never errors
+  // producer (non-blocking)
   killable.Go(k, func () error {
     defer close(ch)
     var i int64
@@ -55,6 +55,7 @@ killable.Go(k, func () error {
     return nil
   })
 
+  // consumer (blocking)
   return killable.Do(k, func() error {
     for i := range ch {
       if i == 123 {
