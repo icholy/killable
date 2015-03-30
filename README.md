@@ -1,6 +1,6 @@
 # Killable
 
-> A packages for graceful shutdowns in Go
+> A package for graceful shutdowns in Go
 
 A `Killable` has 3 states:
 
