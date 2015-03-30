@@ -47,6 +47,9 @@ func Sleep(k Killable, d time.Duration) error {
 // * If the Killable is marked as dying it will return immediatly with ErrDying.
 // * The Killable will not be marked as dead until all calls to Do have returned.
 func Do(k Killable, fn func() error) error {
+	if Dying(k) {
+		return ErrDying
+	}
 	k.add()
 	ch := make(chan error)
 	go func() {
@@ -68,6 +71,9 @@ func Do(k Killable, fn func() error) error {
 // * If the function returns a non-nil error the Killable is killed using that error
 // * The Killable will no be marked as dead until all calls to Go have returned
 func Go(k Killable, fn func() error) {
+	if Dying(k) {
+		return
+	}
 	k.add()
 	go func() {
 		defer k.done()
