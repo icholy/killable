@@ -9,12 +9,14 @@ import (
 )
 
 type Worker struct {
-	ch chan int64
+	name string
+	ch   chan int64
 	killable.Killable
 }
 
-func NewWorker() *Worker {
+func NewWorker(name string) *Worker {
 	return &Worker{
+		name:     name,
 		ch:       make(chan int64),
 		Killable: killable.New(),
 	}
@@ -36,7 +38,7 @@ func (w *Worker) startProducer() {
 			}
 
 			if i > 100 {
-				return fmt.Errorf("limit reached")
+				return fmt.Errorf("worker: %s: limit reached", w.name)
 			}
 		}
 		return nil
@@ -47,12 +49,12 @@ func (w *Worker) consumer() error {
 	return killable.Do(w, func() error {
 		for i := range w.ch {
 			if i == 123 {
-				return fmt.Errorf("I don't like 123")
+				return fmt.Errorf("worker: %s: I don't like 123", w.name)
 			}
 			if err := killable.Sleep(w, 100*time.Millisecond); err != nil {
 				return err
 			}
-			fmt.Printf("got: %d\n", i)
+			fmt.Printf("worker: %s: %d\n", w.name, i)
 		}
 		return nil
 	})
@@ -61,7 +63,7 @@ func (w *Worker) consumer() error {
 func (w *Worker) Start() {
 
 	killable.Defer(w, func() {
-		fmt.Println("all processes complete, cleaning up")
+		fmt.Printf("worker: %s: all processes complete, cleaning up", w.name)
 	})
 
 	killable.Go(w, func() error {
@@ -72,17 +74,25 @@ func (w *Worker) Start() {
 
 func main() {
 
-	w := NewWorker()
+	var (
+		w1 = NewWorker("Worker 1")
+		w2 = NewWorker("Worker 2")
+		w3 = NewWorker("Worker 3")
 
-	w.Start()
+		g = killable.NewGroup(w1, w2, w3)
+	)
+
+	w1.Start()
+	w2.Start()
+	w3.Start()
 
 	go func() {
 		time.Sleep(2 * time.Second)
-		fmt.Println("Killing the worker")
-		w.Kill(nil)
+		fmt.Println("Killing the worker group")
+		g.Kill(fmt.Errorf("time to die!"))
 	}()
 
-	if err := w.Err(); err != nil {
+	if err := g.Err(); err != nil {
 		log.Fatal(err)
 	}
 
