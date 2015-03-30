@@ -11,11 +11,21 @@ var (
 )
 
 type Killable interface {
+	// Dying is close immediatly after Kill is called
 	Dying() <-chan struct{}
+
+	// Dead is closed after all executing functions have returned
+	// These executing functions must have been started with Do or Go
 	Dead() <-chan struct{}
+
+	// Put the Killable into the dying state
 	Kill(reason error)
+
+	// Return the error passed to Kill
+	// blocks until in dying state
 	Err() error
 
+	// access to underlying WaitGroup
 	add()
 	done()
 	wait()
