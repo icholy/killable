@@ -82,6 +82,10 @@ func main() {
 		g = killable.NewGroup(w1, w2, w3)
 	)
 
+	killable.Defer(g, func() {
+		fmt.Println("All workers are dead")
+	})
+
 	w1.Start()
 	w2.Start()
 	w3.Start()
