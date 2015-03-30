@@ -10,37 +10,37 @@ type single struct {
 	wg     sync.WaitGroup
 }
 
-func (c *single) add()                   { c.wg.Add(1) }
-func (c *single) done()                  { c.wg.Done() }
-func (c *single) wait()                  { c.wg.Wait() }
-func (c *single) Dying() <-chan struct{} { return c.dyingc }
-func (c *single) Dead() <-chan struct{}  { return c.deadc }
+func (k *single) add()                   { k.wg.Add(1) }
+func (k *single) done()                  { k.wg.Done() }
+func (k *single) wait()                  { k.wg.Wait() }
+func (k *single) Dying() <-chan struct{} { return k.dyingc }
+func (k *single) Dead() <-chan struct{}  { return k.deadc }
 
-func (c *single) errorHandler() {
-	c.err = <-c.errc
-	close(c.dyingc)
-	c.wait()
-	close(c.deadc)
+func (k *single) errorHandler() {
+	k.err = <-k.errc
+	close(k.dyingc)
+	k.wait()
+	close(k.deadc)
 }
 
-func (c *single) Kill(reason error) {
+func (k *single) Kill(reason error) {
 	select {
-	case c.errc <- reason:
-	case <-c.dyingc:
+	case k.errc <- reason:
+	case <-k.dyingc:
 	}
 }
 
-func (c *single) Err() error {
-	<-c.dyingc
-	return c.err
+func (k *single) Err() error {
+	<-k.dyingc
+	return k.err
 }
 
 func New() Killable {
-	c := &single{
+	k := &single{
 		dyingc: make(chan struct{}),
 		deadc:  make(chan struct{}),
 		errc:   make(chan error),
 	}
-	go c.errorHandler()
-	return c
+	go k.errorHandler()
+	return k
 }
