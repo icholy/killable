@@ -43,6 +43,10 @@ killable.Go(k, func () error {
       case <-k.Dying()
         return killable.ErrDying
       }
+
+      if err := killable.Sleep(k, time.Second); err != nil {
+        return err
+      }
     
       if i > 100 {
         return fmt.Errorf("limit reached")
