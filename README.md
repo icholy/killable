@@ -45,7 +45,7 @@ killable.Go(k, func () error {
       select {
       case ch <- i:
         i++
-      case <-k.Dying()
+      case <-k.Dying():
         return killable.ErrDying
       }
 
