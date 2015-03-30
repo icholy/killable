@@ -1,4 +1,4 @@
-# Killable (WIP)
+# Killable (WIP) [![Build Status](https://travis-ci.org/icholy/killable.svg?branch=master)](https://travis-ci.org/icholy/killable)
 
 > A package for graceful shutdowns in Go
 
