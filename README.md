@@ -13,14 +13,8 @@ There are two ways a killable process can terminate.
 0. One of the worker functions returns an `error`
 0. The `Kill(error)` method is invoked on the `Killable`
 
-Let's look at a simple example of a killable pipeline:
-
 ``` go
-
-var (
-  k = killable.New()
-  c = make(chan int64)
-)
+k = killable.New()
 
 // killer
 go func() {
@@ -28,76 +22,48 @@ go func() {
   k.Kill(nil)
 }()
 
-// producer
-go func() {
+// Defer run the callback once all worker functions (Go/Do) have returned
+killable.Defer(k, func() {
+  fmt.Println("all worker function done")
+})
 
-  var i int64
-  defer close(out)
+killable.Go(k, func () error {
 
-  for {
-    select {
-    case ch <- i:
-    case <-k.Dying()
-      return
+  ch = make(chan int64)
+
+  // producer that never errors
+  killable.Go(k, func () error {
+    defer close(ch)
+    var i int64
+    
+    for {
+      select {
+      case ch <- i:
+        i++
+      case <-k.Dying()
+        return killable.ErrDying
+      }
+    
+      if i > 100 {
+        return fmt.Errorf("limit reached")
+      }
     }
-    i++
-  }
+    return nil
+  })
 
-}()
-
-// consumer
-for i := range c {
-  fmt.Println(i)
-}
-```
-
-When `Kill(error)` is called on the `Killable`, it closes the `Dying()` channel.
-When recieving on a closed channel, you'll immediatly get a zero value of its type.
-
-Now say the producer wanted to cancel itself:
-
-``` go
-
-var (
-  k = killable.New()
-  c = make(chan int64)
-)
-
-// producer
-killable.Go(k, func() error {
-
-  var i int64
-  defer close(out)
-
-  for {
-
-    select {
-    case ch <- i:
-    case <-k.Dying()
-      return Killable.ErrDying
+  return killable.Do(k, func() error {
+    for i := range ch {
+      if i == 123 {
+        return fmt.Errorf("I don't like 123")
+      }
     }
+    return nil
+  })
 
-    if i > 100 {
-      return fmt.Errorf("limit reached")
-    }
-
-    i++
-  }
-
-  return nil
-}()
-
-// consumer
-for i := range c {
-  fmt.Println(i)
-}
+})
 
 if err := k.Err(); err != nil {
   log.Fatal(err)
 }
+
 ```
-
-In this case, we're using the `killable.Go` function.
-It starts a goroutine using the provided function.
-
-* If the function returns an error that is not `nil` or `ErrDying` it will call `Kill` with it.
