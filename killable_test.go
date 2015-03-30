@@ -221,3 +221,61 @@ func TestDeferShouldRunWhenDead(t *testing.T) {
 	k.Kill(nil)
 	doneTimeoutErr(t, done, "Defer callback was not invoked")
 }
+
+func TestKillGroupKillsChildren(t *testing.T) {
+	var (
+		k1  = New()
+		k2  = New()
+		g   = NewGroup(k1, k2)
+		err = errors.New("blah blah blah")
+	)
+	g.Kill(err)
+	doneTimeoutErr(t, k1.Dying(), "killable 1 didn't die")
+	if k1.Err() != err {
+		t.Errorf("k1 didn't get killed with correct error")
+	}
+	doneTimeoutErr(t, k2.Dying(), "killable 2 didn't die")
+	if k2.Err() != err {
+		t.Errorf("k2 didn't get killed with correct error")
+	}
+}
+
+func TestKillChildKillsGroup(t *testing.T) {
+	var (
+		k1  = New()
+		k2  = New()
+		g   = NewGroup(k1, k2)
+		err = errors.New("foo bar")
+	)
+	k2.Kill(err)
+	doneTimeoutErr(t, k1.Dying(), "killable 1 didn't die")
+	if k1.Err() != err {
+		t.Errorf("k1 didn't get killed with correct error")
+	}
+	doneTimeoutErr(t, g.Dying(), "group didn't die")
+	if g.Err() != err {
+		t.Errorf("group didn't get killed with correct error")
+	}
+}
+
+func TestGroupDeadAfterChildrenComplete(t *testing.T) {
+	var (
+		k1 = New()
+		k2 = New()
+		g  = NewGroup(k1, k2)
+		wg sync.WaitGroup
+	)
+	fn := func() error {
+		defer wg.Done()
+		if !doneTimeout(g.Dead()) {
+			t.Errorf("group didn't wait for child 1 to complete")
+		}
+		return nil
+	}
+	wg.Add(2)
+	Go(k1, fn)
+	Go(k2, fn)
+	g.Kill(nil)
+	wg.Wait()
+	doneTimeoutErr(t, g.Dead(), "group didn't die")
+}
