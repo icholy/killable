@@ -21,6 +21,9 @@ type Killable interface {
 	wait()
 }
 
+// Sleep blocks for a specified duration
+// If the Killable is marked as dying it will return
+// immediatly with ErrDying
 func Sleep(k Killable, d time.Duration) error {
 	select {
 	case <-time.After(d):
@@ -30,6 +33,9 @@ func Sleep(k Killable, d time.Duration) error {
 	}
 }
 
+// Do executes a function and retuns its error value.
+// * If the Killable is marked as dying it will return immediatly with ErrDying.
+// * The Killable will not be marked as dead until all calls to Do have returned.
 func Do(k Killable, fn func() error) error {
 	k.add()
 	ch := make(chan error)
@@ -48,16 +54,20 @@ func Do(k Killable, fn func() error) error {
 	}
 }
 
+// Go executes a function in a goroutine
+// * If the function returns a non-nil error the Killable is killed using that error
+// * The Killable will no be marked as dead until all calls to Go have returned
 func Go(k Killable, fn func() error) {
 	k.add()
 	go func() {
 		defer k.done()
-		if err := fn(); err != ErrDying {
+		if err := fn(); err != nil && err != ErrDying {
 			k.Kill(err)
 		}
 	}()
 }
 
+// Defer invokes a callback once a Killable is dead
 func Defer(k Killable, fn func()) {
 	go func() {
 		<-k.Dead()
@@ -65,6 +75,7 @@ func Defer(k Killable, fn func()) {
 	}()
 }
 
+// Dying returns true if a Killable is in the dying or dead state
 func Dying(k Killable) bool {
 	select {
 	case <-k.Dying():
@@ -74,6 +85,7 @@ func Dying(k Killable) bool {
 	}
 }
 
+// Dead returns true if the Killable is in the dead state
 func Dead(k Killable) bool {
 	select {
 	case <-k.Dead():
@@ -83,10 +95,13 @@ func Dead(k Killable) bool {
 	}
 }
 
+// Alive returns true if the Killable is not in a dying state
 func Alive(k Killable) bool {
 	return !Dying(k)
 }
 
+// Err returns the Killable error
+// If the Killable is alive, it returns ErrStillAlive
 func Err(k Killable) error {
 	if Alive(k) {
 		return ErrStillAlive
