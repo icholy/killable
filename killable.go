@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	ErrDying      = errors.New("terminator: dying")
-	ErrStillAlive = errors.New("terminator: still alive")
+	ErrDying      = errors.New("killable: dying")
+	ErrStillAlive = errors.New("killable: still alive")
 )
 
 type Killable interface {
