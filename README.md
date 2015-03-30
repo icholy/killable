@@ -20,5 +20,5 @@ Worker processes can be started with:
 * `killable.Go` which starts a goroutine
 * `killable.Do` which blocks while executing
 
-See examples directory to see how to use it.
+See `examples/` directory to see how to use it.
 
