@@ -11,7 +11,7 @@ var (
 )
 
 type Killable interface {
-	// Dying is close immediatly after Kill is called
+	// Dying is closed immediatly after Kill is called
 	Dying() <-chan struct{}
 
 	// Dead is closed after all executing functions have returned
