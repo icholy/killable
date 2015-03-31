@@ -226,7 +226,7 @@ func TestKillGroupKillsChildren(t *testing.T) {
 	var (
 		k1  = New()
 		k2  = New()
-		g   = NewGroup(k1, k2)
+		g   = New(k1, k2)
 		err = errors.New("blah blah blah")
 	)
 	g.Kill(err)
@@ -244,7 +244,7 @@ func TestKillChildKillsGroup(t *testing.T) {
 	var (
 		k1  = New()
 		k2  = New()
-		g   = NewGroup(k1, k2)
+		g   = New(k1, k2)
 		err = errors.New("foo bar")
 	)
 	k2.Kill(err)
@@ -262,7 +262,7 @@ func TestGroupDeadAfterChildrenComplete(t *testing.T) {
 	var (
 		k1 = New()
 		k2 = New()
-		g  = NewGroup(k1, k2)
+		g  = New(k1, k2)
 		wg sync.WaitGroup
 	)
 	fn := func() error {

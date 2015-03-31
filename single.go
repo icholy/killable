@@ -35,7 +35,7 @@ func (k *single) Err() error {
 	return k.err
 }
 
-func New() Killable {
+func newSingle() Killable {
 	k := &single{
 		dyingc: make(chan struct{}),
 		deadc:  make(chan struct{}),

@@ -31,6 +31,14 @@ type Killable interface {
 	wait()
 }
 
+func New(killables ...Killable) Killable {
+	if len(killables) == 0 {
+		return newSingle()
+	} else {
+		return newGroup(killables...)
+	}
+}
+
 // Sleep blocks for a specified duration
 // If the Killable is marked as dying it will return
 // immediatly with ErrDying

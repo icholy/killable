@@ -79,7 +79,7 @@ func main() {
 		w2 = NewWorker("Worker 2")
 		w3 = NewWorker("Worker 3")
 
-		g = killable.NewGroup(w1, w2, w3)
+		g = killable.New(w1, w2, w3)
 	)
 
 	killable.Defer(g, func() {

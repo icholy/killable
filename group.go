@@ -11,7 +11,7 @@ type group struct {
 	wg       sync.WaitGroup
 }
 
-func NewGroup(killables ...Killable) Killable {
+func newGroup(killables ...Killable) Killable {
 	k := &group{
 		children: killables,
 		dyingc:   make(chan struct{}),
