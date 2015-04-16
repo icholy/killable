@@ -6,6 +6,8 @@
 
 A `Killable` represents a group of goroutines. It goes through 3 stages:
 
+![](images/states.jpg)
+
 0. Alive - The goroutines are running
 0. Dying - The goroutines are being signaled to terminate
 0. Dead  - All goroutines have terminated
@@ -101,6 +103,8 @@ go func() {
 }()
 
 ```
+
+![](images/killable.gif)
 
 See `examples/` directory.
 
