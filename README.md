@@ -26,15 +26,14 @@ Goroutines managed by the `Killable` are started with `killable.Go`
 k := killable.New()
 
 go func() {
-  err := k.Err()
-  fmt.Println("Dying because: ", err)
+  <-k.Dying()
+  fmt.Println("Dying")
+
+  <-k.Dead()
+  fmt.Println("Dead")
 }()
 
-killable.Defer(k, func() {
-  fmt.Println("Dead")
-})
-
-killable.Go(func() error {
+killable.Go(k, func() error {
   time.Sleep(5 * time.Second)
   fmt.Println("Finished sleeping, i'll be dead soon")
   return nil
