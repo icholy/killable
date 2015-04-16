@@ -26,6 +26,9 @@ type Killable interface {
 	// blocks until in dying state
 	Err() error
 
+	// add a function to run when dead
+	addDefer(func())
+
 	// faster state access
 	isDead() bool
 	isDying() bool
@@ -98,10 +101,7 @@ func Go(k Killable, fn func() error) {
 
 // Defer invokes a callback once a Killable is dead
 func Defer(k Killable, fn func()) {
-	go func() {
-		<-k.Dead()
-		fn()
-	}()
+	k.addDefer(fn)
 }
 
 // IsDying returns true if a Killable is in the dying or dead state

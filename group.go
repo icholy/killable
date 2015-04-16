@@ -10,6 +10,7 @@ type group struct {
 	err      error
 	dead     bool
 	dying    bool
+	deferred []func()
 	m        sync.RWMutex
 	wg       sync.WaitGroup
 }
@@ -32,6 +33,16 @@ func newGroup(killables ...Killable) Killable {
 func (k *group) add()  { k.wg.Add(1) }
 func (k *group) done() { k.wg.Done() }
 func (k *group) wait() { k.wg.Wait() }
+
+func (k *group) addDefer(fn func()) {
+	k.m.Lock()
+	k.m.Unlock()
+	if k.dead {
+		fn()
+	} else {
+		k.deferred = append(k.deferred, fn)
+	}
+}
 
 func (k *group) isDead() bool {
 	k.m.RLock()
@@ -76,6 +87,13 @@ func (k *group) errorHandler() {
 	close(k.deadc)
 	k.m.Lock()
 	k.dead = true
+
+	// invoke deferreds
+	nDeferred := len(k.deferred)
+	for i := range k.deferred {
+		k.deferred[nDeferred-i-1]()
+	}
+
 	k.m.Unlock()
 }
 

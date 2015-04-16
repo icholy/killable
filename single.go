@@ -3,19 +3,30 @@ package killable
 import "sync"
 
 type single struct {
-	errc   chan error
-	dyingc chan struct{}
-	deadc  chan struct{}
-	dead   bool
-	dying  bool
-	err    error
-	wg     sync.WaitGroup
-	m      sync.RWMutex
+	errc     chan error
+	dyingc   chan struct{}
+	deadc    chan struct{}
+	dead     bool
+	dying    bool
+	err      error
+	deferred []func()
+	wg       sync.WaitGroup
+	m        sync.RWMutex
 }
 
 func (k *single) add()  { k.wg.Add(1) }
 func (k *single) done() { k.wg.Done() }
 func (k *single) wait() { k.wg.Wait() }
+
+func (k *single) addDefer(fn func()) {
+	k.m.Lock()
+	defer k.m.Unlock()
+	if k.dead {
+		fn()
+	} else {
+		k.deferred = append(k.deferred, fn)
+	}
+}
 
 func (k *single) isDying() bool {
 	k.m.RLock()
@@ -49,6 +60,13 @@ func (k *single) errorHandler() {
 	close(k.deadc)
 	k.m.Lock()
 	k.dead = true
+
+	// invoke deferreds
+	nDeferred := len(k.deferred)
+	for i := range k.deferred {
+		k.deferred[nDeferred-i-1]()
+	}
+
 	k.m.Unlock()
 }
 
