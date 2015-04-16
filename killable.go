@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrDying      = errors.New("killable: dying")
+	ErrKill       = errors.New("killable: killed")
 	ErrStillAlive = errors.New("killable: still alive")
 )
 
