@@ -61,7 +61,48 @@ func Connect(k killable.Killable) (*sql.DB, error) {
 }
 ```
 
-See `examples/` directory to see how to use it.
+`Killable`s can be linked to eachother in a parent/child relationship.
+
+* If a child is killed, the parent is also killed.
+* If the parent is killed, it kills all the children.
+* If the `reason` is `ErrKillLocal`, the error doesn't propogate.
+* The parent doesn't die until all the children are dead
+
+``` go
+
+func makeChild(d time.Duration) killable.Killable {
+  k := killable.New()
+
+  killable.Go(k, func() {
+    time.Sleep(d)
+    return killable.ErrKill
+  })
+
+  return k
+}
+
+var (
+  // children
+  k1 = makeChild(2 * time.Second)
+  k2 = makeChild(3 * time.Second)
+  k3 = makeChild(4 * time.Second)
+
+  // parent
+  k4 = killable.New(k1, k2, k3)
+)
+
+killable.Defer(k4, func() {
+  fmt.Println("All children are dead!")
+})
+
+go func() {
+  <-k.Dying()
+  fmt.Println("Killing all children")
+}()
+
+```
+
+See `examples/` directory.
 
 The methods like `Defer`, `Go`, `Do`, etc ...  have been placed in the packages because the `Killable` type is meant to be embedded. The interface the `Killable` type exposes makes sense without understanding the `killable` package.
 
