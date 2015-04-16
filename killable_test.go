@@ -222,6 +222,42 @@ func TestDeferShouldRunWhenDead(t *testing.T) {
 	doneTimeoutErr(t, done, "Defer callback was not invoked")
 }
 
+func TestDeferExecutesOppositeOrder(t *testing.T) {
+	var (
+		k    = New()
+		done = make(chan struct{})
+
+		secondWasExecuted bool
+	)
+	Defer(k, func() {
+		if !secondWasExecuted {
+			t.Fatal("Second Defer func should have executed first")
+		}
+		close(done)
+	})
+	Defer(k, func() {
+		secondWasExecuted = true
+	})
+	k.Kill(nil)
+	doneTimeoutErr(t, done, "Defer callback was never called")
+}
+
+func TestDeferExecutesImmediatelyWhenAlreadyDead(t *testing.T) {
+	var (
+		k = New()
+
+		wasExecuted bool
+	)
+	k.Kill(nil)
+	<-k.Dead()
+	Defer(k, func() {
+		wasExecuted = true
+	})
+	if !wasExecuted {
+		t.Fatal("Defer was not executed")
+	}
+}
+
 func TestKillGroupKillsChildren(t *testing.T) {
 	var (
 		k1  = New()
