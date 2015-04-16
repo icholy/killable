@@ -14,17 +14,13 @@ A `Killable` represents a group of goroutines. It goes through 3 stages:
 
 There are two ways a `Killable` can enter the dying state.
 
-0. One of the goroutines returns a non `nil` `error`
+0. One of the managed goroutines returns a non `nil` `error`
 0. The `Kill(error)` method is invoked on the `Killable`.
 
 ## Managed Goroutines
 
-Goroutines managed by the `Killable` can be started with:
+Goroutines managed by the `Killable` are started with `killable.Go`
 
-* `killable.Go` which starts a goroutine.
-* `killable.Do` which blocks while executing.
-
-A `Killable` is not dead until all managed goroutines have returned.
 
 ``` go
 k := killable.New()
@@ -46,6 +42,10 @@ killable.Go(func() error {
 
 k.Kill(fmt.Errorf("it's time to die!"))
 ```
+
+* A `Killable` is not dead until all managed goroutines have returned.
+* If the goroutine returns a non `nil` `error`, the `Killable` starts dying.
+* If the `Killable` is already dying when the `Go` method is invoked, it does not run.
 
 ## Defer
 
@@ -69,13 +69,17 @@ func Connect(k killable.Killable) (*sql.DB, error) {
 }
 ```
 
+* Deferred methods are called once the killable is dead.
+* Deferred methods are invoked in the opposite order they were defined (lifo).
+* If the `Killable` is already dead, the function is called immediately.
+
 ## Linking
 
 `Killable`s can be linked to eachother in a parent/child relationship.
 
 * If a child is killed, the parent is also killed.
 * If the parent is killed, it kills all the children.
-* If the `reason` is `ErrKillLocal`, the error doesn't propogate.
+* If the `reason` is `ErrKillLocal`, the parent ignores it.
 * The parent doesn't die until all the children are dead
 
 ``` go
