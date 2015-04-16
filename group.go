@@ -15,15 +15,15 @@ type group struct {
 	wg       sync.WaitGroup
 }
 
-func newGroup(killables ...Killable) Killable {
+func newGroup(children ...Killable) Killable {
 	k := &group{
-		children: killables,
+		children: children,
 		dyingc:   make(chan struct{}),
 		deadc:    make(chan struct{}),
 		errc:     make(chan error),
 	}
-	k.wg.Add(len(killables))
-	for _, child := range killables {
+	k.wg.Add(len(children))
+	for _, child := range children {
 		go k.childErrorHandler(child)
 	}
 	go k.errorHandler()
