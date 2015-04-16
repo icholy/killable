@@ -87,7 +87,14 @@ func makeChild(d time.Duration) killable.Killable {
   k := killable.New()
 
   killable.Go(k, func() {
-    time.Sleep(d)
+
+    // Sleep will immediately return ErrDying if the Killable
+    // enters the dying state during the sleep
+    // (see source to see how to implement similar methods)
+    if err := killable.Sleep(k, d); err != nil {
+      return err
+    }
+
     return killable.ErrKill
   })
 
