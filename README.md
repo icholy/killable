@@ -96,9 +96,9 @@ func makeChild(d time.Duration) killable.Killable {
 
 var (
   // children
-  k1 = makeChild(2 * time.Second)
+  k1 = makeChild(4 * time.Second)
   k2 = makeChild(3 * time.Second)
-  k3 = makeChild(4 * time.Second)
+  k3 = makeChild(2 * time.Second)
 
   // parent
   k4 = killable.New(k1, k2, k3)
