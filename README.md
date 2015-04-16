@@ -109,7 +109,7 @@ killable.Defer(k4, func() {
 })
 
 go func() {
-  <-k.Dying()
+  <-k4.Dying()
   fmt.Println("Killing all children")
 }()
 
