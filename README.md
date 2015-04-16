@@ -2,8 +2,6 @@
 
 > A package for graceful shutdowns in Go
 
-**Note:** The API is still in flux.
-
 ## States
 
 A `Killable` represents a group of goroutines. It goes through 3 stages:
