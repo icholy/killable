@@ -60,7 +60,7 @@ func Sleep(k Killable, d time.Duration) error {
 // * If the Killable is marked as dying it will return immediatly with ErrDying.
 // * The Killable will not be marked as dead until all calls to Do have returned.
 func Do(k Killable, fn func() error) error {
-	if Dying(k) {
+	if IsDying(k) {
 		return ErrDying
 	}
 	k.add()
@@ -84,7 +84,7 @@ func Do(k Killable, fn func() error) error {
 // * If the function returns a non-nil error the Killable is killed using that error
 // * The Killable will no be marked as dead until all calls to Go have returned
 func Go(k Killable, fn func() error) {
-	if Dying(k) {
+	if IsDying(k) {
 		return
 	}
 	k.add()
@@ -104,25 +104,19 @@ func Defer(k Killable, fn func()) {
 	}()
 }
 
-// Dying returns true if a Killable is in the dying or dead state
-func Dying(k Killable) bool {
-	return k.isDying()
-}
+// IsDying returns true if a Killable is in the dying or dead state
+func IsDying(k Killable) bool { return k.isDying() }
 
-// Dead returns true if the Killable is in the dead state
-func Dead(k Killable) bool {
-	return k.isDead()
-}
+// IsDead true if the Killable is in the dead state
+func IsDead(k Killable) bool { return k.isDead() }
 
-// Alive returns true if the Killable is not in a dying state
-func Alive(k Killable) bool {
-	return !Dying(k)
-}
+// IsAlive returns true if the Killable isn't in the dead or dying states
+func IsAlive(k Killable) bool { return !IsDying(k) }
 
 // Err returns the Killable error
 // If the Killable is alive, it returns ErrStillAlive
 func Err(k Killable) error {
-	if Dead(k) {
+	if IsDead(k) {
 		return k.Err()
 	} else {
 		return ErrStillAlive
