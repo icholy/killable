@@ -294,6 +294,17 @@ func TestKillChildKillsGroup(t *testing.T) {
 	}
 }
 
+func TestKillLocalChildDoesNotKillGroup(t *testing.T) {
+	var (
+		k = New()
+		g = New(k)
+	)
+	k.Kill(ErrKillLocal)
+	if !doneTimeout(g.Dying()) {
+		t.Fatal("group got killed by local child error")
+	}
+}
+
 func TestGroupDeadAfterChildrenComplete(t *testing.T) {
 	var (
 		k1 = New()

@@ -60,7 +60,9 @@ func (k *group) Dying() <-chan struct{} { return k.dyingc }
 func (k *group) Dead() <-chan struct{}  { return k.deadc }
 
 func (k *group) childErrorHandler(child Killable) {
-	k.Kill(child.Err())
+	if err := child.Err(); err != ErrKillLocal {
+		k.Kill(err)
+	}
 	<-child.Dead()
 	k.wg.Done()
 }
