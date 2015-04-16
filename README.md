@@ -24,49 +24,41 @@ Goroutines managed by the `Killable` can be started with:
 k := killable.New()
 
 go func() {
-  <-k.Dying()
-  fmt.Println("Dying")
-}()
-
-go func() {
-  <-k.Dead()
-  fmt.Println("Dead")
-}()
-
-// create managed goroutine
-killable.Go(k, func() error {
-  time.Sleep(5*time.Second)
-  fmt.Println("Finished Sleeping")
-  return nil
-})
-
-k.Kill(nil)
-```
-
-The `Err()` and `Defer()` methods make it easier to make use of the states.
-
-``` go
-k := killable.New()
-
-// Err will block until the Killable is in the Dying state
-go func() {
   err := k.Err()
-  fmt.Println("Dying: ", err)
+  fmt.Println("Dying because: ", err)
 }()
 
-// Defer will execute the function after the Killable is dead
 killable.Defer(k, func() {
   fmt.Println("Dead")
 })
 
-// create managed goroutine
-killable.Go(k, func() error {
-  time.Sleep(5*time.Second)
-
-  // returning a non nil error will put
-  // the killable in a dying state
-  return killable.ErrKill
+killable.Go(func() error {
+  time.Sleep(5 * time.Second)
+  fmt.Println("Finished sleeping, i'll be dead soon")
+  return nil
 })
+
+k.Kill(fmt.Errorf("it's time to die!"))
+```
+
+`Defer` is similar to the `defer` keyword. 
+
+``` go
+func Connect(k killable.Killable) (*sql.DB, error) {
+
+  db, err := sql.Open("foo", "bar")
+  if err != nil {
+    return nil, err
+  }
+
+  // clean up resources near instantiation
+  // execute in opposite order after Killable is dead
+  killable.Defer(k, func() {
+    db.Close()
+  })
+
+  return db, nil
+}
 ```
 
 See `examples/` directory to see how to use it.
