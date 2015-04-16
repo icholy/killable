@@ -99,10 +99,10 @@ func Go(k Killable, fn func() error) {
 	}()
 }
 
-// Defer invokes a callback once a Killable is dead
-func Defer(k Killable, fn func()) {
-	k.addDefer(fn)
-}
+// Defer invokes a callback once a Killable is dead.
+// deferred functions will execute in the opposite order they were defined in
+// if the Killable is already dead, the deferred will be called immediatly
+func Defer(k Killable, fn func()) { k.addDefer(fn) }
 
 // IsDying returns true if a Killable is in the dying or dead state
 func IsDying(k Killable) bool { return k.isDying() }
