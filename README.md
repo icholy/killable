@@ -59,7 +59,6 @@ func Connect(k killable.Killable) (*sql.DB, error) {
   }
 
   // clean up resources near instantiation
-  // execute in opposite order after Killable is dead
   killable.Defer(k, func() {
     db.Close()
   })
