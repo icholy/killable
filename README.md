@@ -4,23 +4,29 @@
 
 **Note:** The API is still in flux.
 
-A `Killable` represents a group of goroutines. It goes through 3 stages:
+## States
 
-![](images/states.jpg)
+A `Killable` represents a group of goroutines. It goes through 3 stages:
 
 0. Alive - The goroutines are running
 0. Dying - The goroutines are being signaled to terminate
-0. Dead  - All goroutines have terminated
+0. Dead  - All managed goroutines have terminated
+
+![](images/states.jpg)
 
 There are two ways a `Killable` can enter the dying state.
 
-0. One of the goroutines returns an `error`
-0. The `Kill(error)` method is invoked on the `Killable`
+0. One of the goroutines returns a non `nil` `error`
+0. The `Kill(error)` method is invoked on the `Killable`.
+
+## Managed Goroutines
 
 Goroutines managed by the `Killable` can be started with:
 
 * `killable.Go` which starts a goroutine.
 * `killable.Do` which blocks while executing.
+
+A `Killable` is not dead until all managed goroutines have returned.
 
 ``` go
 k := killable.New()
@@ -43,6 +49,8 @@ killable.Go(func() error {
 k.Kill(fmt.Errorf("it's time to die!"))
 ```
 
+## Defer
+
 `Defer` is similar to the `defer` keyword. 
 
 ``` go
@@ -62,6 +70,8 @@ func Connect(k killable.Killable) (*sql.DB, error) {
   return db, nil
 }
 ```
+
+## Linking
 
 `Killable`s can be linked to eachother in a parent/child relationship.
 
