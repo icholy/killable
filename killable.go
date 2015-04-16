@@ -6,9 +6,20 @@ import (
 )
 
 var (
-	ErrDying      = errors.New("killable: dying")
-	ErrKill       = errors.New("killable: killed")
-	ErrKillLocal  = errors.New("killable: local killed")
+	// ErrDying is returned when some action was cancelled due
+	// to the Dying channel closing
+	ErrDying = errors.New("killable: dying")
+
+	// ErrKill is returned from managed goroutines to
+	// put the Killable into the dying state
+	ErrKill = errors.New("killable: killed")
+
+	// ErrKillLocal is returned from managed goroutines to
+	// put the killable into the dying state but without
+	// propagating it to parent Killables
+	ErrKillLocal = errors.New("killable: local killed")
+
+	// ErrStillAlive is returned by Err if the Killable isn't dying
 	ErrStillAlive = errors.New("killable: still alive")
 )
 
@@ -40,6 +51,7 @@ type Killable interface {
 	wait()
 }
 
+// New creates a new Killable
 func New(killables ...Killable) Killable {
 	if len(killables) == 0 {
 		return newSingle()
