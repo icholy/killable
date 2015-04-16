@@ -25,6 +25,10 @@ type Killable interface {
 	// blocks until in dying state
 	Err() error
 
+	// faster state access
+	isDead() bool
+	isDying() bool
+
 	// access to underlying WaitGroup
 	add()
 	done()
@@ -101,22 +105,12 @@ func Defer(k Killable, fn func()) {
 
 // Dying returns true if a Killable is in the dying or dead state
 func Dying(k Killable) bool {
-	select {
-	case <-k.Dying():
-		return true
-	default:
-		return false
-	}
+	return k.isDying()
 }
 
 // Dead returns true if the Killable is in the dead state
 func Dead(k Killable) bool {
-	select {
-	case <-k.Dead():
-		return true
-	default:
-		return false
-	}
+	return k.isDead()
 }
 
 // Alive returns true if the Killable is not in a dying state
@@ -127,9 +121,9 @@ func Alive(k Killable) bool {
 // Err returns the Killable error
 // If the Killable is alive, it returns ErrStillAlive
 func Err(k Killable) error {
-	if Alive(k) {
-		return ErrStillAlive
-	} else {
+	if Dead(k) {
 		return k.Err()
+	} else {
+		return ErrStillAlive
 	}
 }
