@@ -112,8 +112,8 @@ func TestShouldNotDieUntilMultipleDoReturns(t *testing.T) {
 		wg sync.WaitGroup
 	)
 	fn := func() error {
+		wg.Done()
 		defer wg.Done()
-		k.Kill(nil)
 		<-k.Dying()
 		if !doneTimeout(k.Dead()) {
 			t.Errorf("Killable should not be dead until Do returns")
@@ -125,6 +125,9 @@ func TestShouldNotDieUntilMultipleDoReturns(t *testing.T) {
 	go Do(k, fn)
 	go Do(k, fn)
 	go Do(k, fn)
+	wg.Wait()
+	wg.Add(4)
+	k.Kill(nil)
 	wg.Wait()
 	doneTimeoutErr(t, k.Dead(), "Killable should be dead after Do returns")
 }
