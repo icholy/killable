@@ -22,7 +22,7 @@ func (k *single) addDefer(fn func()) {
 	k.m.Lock()
 	defer k.m.Unlock()
 	if k.dead {
-		fn()
+		go fn()
 	} else {
 		k.deferred = append(k.deferred, fn)
 	}

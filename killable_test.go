@@ -245,22 +245,6 @@ func TestDeferExecutesOppositeOrder(t *testing.T) {
 	doneTimeoutErr(t, done, "Defer callback was never called")
 }
 
-func TestDeferExecutesImmediatelyWhenAlreadyDead(t *testing.T) {
-	var (
-		k = New()
-
-		wasExecuted bool
-	)
-	k.Kill(nil)
-	<-k.Dead()
-	Defer(k, func() {
-		wasExecuted = true
-	})
-	if !wasExecuted {
-		t.Fatal("Defer was not executed")
-	}
-}
-
 func TestKillGroupKillsChildren(t *testing.T) {
 	var (
 		k1  = New()
