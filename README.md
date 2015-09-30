@@ -69,7 +69,6 @@ func Connect(k killable.Killable) (*sql.DB, error) {
 
 * Deferred methods are called once the killable is dead.
 * Deferred methods are invoked in the opposite order they were defined (lifo).
-* If the `Killable` is already dead, the function is called immediately.
 
 ## Linking
 
