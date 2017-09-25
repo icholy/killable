@@ -334,3 +334,12 @@ func TestContextErr(t *testing.T) {
 		t.Fatalf("%s err doesn't equal %s", ctx.Err(), err)
 	}
 }
+
+func TestContextErrDying(t *testing.T) {
+	k := New()
+	ctx := k.Context()
+	k.Kill(nil)
+	if ctx.Err() != ErrDying {
+		t.Fatalf("%s should be ErrDying", ctx.Err())
+	}
+}
