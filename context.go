@@ -20,7 +20,7 @@ func (c *kContext) Done() <-chan struct{} {
 // Err returns an error if the killable is dying, otherwise it returns nill
 func (c *kContext) Err() error {
 	if c.k.isDying() {
-		return c.Err()
+		return c.k.Err()
 	}
 	return nil
 }

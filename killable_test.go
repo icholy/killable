@@ -313,3 +313,24 @@ func TestGroupDeadAfterChildrenComplete(t *testing.T) {
 	wg.Wait()
 	doneTimeoutErr(t, g.Dead(), "group didn't die")
 }
+
+func TestContextDoneWhenDying(t *testing.T) {
+	k := New()
+	ctx := k.Context()
+	k.Kill(nil)
+	doneTimeoutErr(t, ctx.Done(), "context isn't done")
+}
+
+func TestContextErr(t *testing.T) {
+	k := New()
+	ctx := k.Context()
+	err := errors.New("some error")
+
+	if ctx.Err() != nil {
+		t.Fatal("context error should be nil")
+	}
+	k.Kill(err)
+	if ctx.Err() != err {
+		t.Fatalf("%s err doesn't equal %s", ctx.Err(), err)
+	}
+}
