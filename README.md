@@ -126,3 +126,13 @@ See `examples/` directory.
 
 The methods like `Defer`, `Go`, `Do`, etc ...  have been placed in the packages because the `Killable` type is meant to be embedded. The interface the `Killable` type exposes makes sense without understanding the `killable` package.
 
+## Context
+
+Since Go 1.7, the many standard library functions have support for `context.Context`. The `killable.Killable` interface cannot be changed to conform to the `context.Context` interface because the semantics of the `Err` method. To get around this, `killable.Killable` has a `.Context()`.
+
+``` go
+func DoQuery(k killable.Killable, db *sql.DB) error {
+  _, err := db.ExecContext(k.Context(), "INSERT foo INTO bar")
+  return err
+}
+```
