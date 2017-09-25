@@ -1,6 +1,7 @@
 package killable
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -37,6 +38,9 @@ type Killable interface {
 	// Return the error passed to Kill
 	// blocks until in dying state
 	Err() error
+
+	// Context returns a context.Context that's linked to the killable
+	Context() context.Context
 
 	// add a function to run when dead
 	addDefer(func())

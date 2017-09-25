@@ -1,6 +1,9 @@
 package killable
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type group struct {
 	children []Killable
@@ -109,4 +112,8 @@ func (k *group) Kill(reason error) {
 func (k *group) Err() error {
 	<-k.dyingc
 	return k.err
+}
+
+func (k *group) Context() context.Context {
+	return &kContext{k}
 }

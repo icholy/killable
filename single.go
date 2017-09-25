@@ -1,6 +1,9 @@
 package killable
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type single struct {
 	errc     chan error
@@ -80,6 +83,10 @@ func (k *single) Kill(reason error) {
 func (k *single) Err() error {
 	<-k.dyingc
 	return k.err
+}
+
+func (k *single) Context() context.Context {
+	return &kContext{k}
 }
 
 func newSingle() Killable {
