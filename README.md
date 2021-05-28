@@ -1,3 +1,5 @@
+# DEPRECATED - THIS PACKAGE IS BROKEN AND I'M NOT GOING TO FIX IT
+
 # Killable [![Build Status](https://travis-ci.org/icholy/killable.svg?branch=master)](https://travis-ci.org/icholy/killable)
 
 > A package for graceful shutdowns (inspired by tomb)
